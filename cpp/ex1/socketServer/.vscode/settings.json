@@ -43,7 +43,8 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "cstdarg": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
