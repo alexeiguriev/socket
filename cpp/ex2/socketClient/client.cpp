@@ -9,6 +9,7 @@
 #define PORT 65432
 
 std::string inetAddr("192.168.56.1");
+//std::string inetAddr("170.0.0.1");
 Network network(client,"TestServer",AF_INET,SOCK_STREAM,IPPROTO_TCP,INADDR_ANY,PORT,inetAddr);
 
 void PrepareAnswer(const SOCKET sock, const char *data,const int lenght)
@@ -32,7 +33,7 @@ int main()
     {
         std::cout << "Input a new message: ";
         std::string msg;
-        std::cin >> msg;
+        std::getline(std::cin, msg);
         std::cout << std::endl;
 
         network.Send(msg.c_str(), msg.length());

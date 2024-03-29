@@ -3,7 +3,7 @@
 
 #include "Network.hpp"
 
-Network::Network(NetworkType type, std::string_view name, const int af,const int soketType,const int protocol, const u_long addr, const u_short port,
+Network::Network(NetworkType type, std::string_view name, const int af,const int soketType,const int protocol, const u_short port,
         const std::string inetAddr)
 {
     _type = type;
@@ -25,10 +25,10 @@ Network::Network(NetworkType type, std::string_view name, const int af,const int
 
     _address.sin_family = af;
     _address.sin_port = htons(port);
+    _address.sin_addr.s_addr = inet_addr(inetAddr.c_str());
 
     if (type == client)
     {
-        _address.sin_addr.s_addr = inet_addr(inetAddr.c_str());
         if (connect(_socket_fd, (struct sockaddr*)&_address, sizeof(_address)) == SOCKET_ERROR)
         {
             std::cerr << "connection failed: " << WSAGetLastError() << std::endl;
@@ -39,7 +39,6 @@ Network::Network(NetworkType type, std::string_view name, const int af,const int
     }
     else if (type == server)
     {
-        _address.sin_addr.s_addr = addr;
         // Forcefully attaching socket to the port 65432
         if (bind(_socket_fd, (struct sockaddr *)&_address, sizeof(_address)) == SOCKET_ERROR)
         {
@@ -74,6 +73,7 @@ Network::~Network()
         delete[] clientData; // Free the memory for each char* buffer
     }
     _data.clear();
+    _dataSize.clear();
 
     // Close all client sockets
     for (SOCKET sock : _clientSockets)
@@ -99,6 +99,7 @@ void Network::StartProcessingData()
     {
         _clientSockets.push_back(_socket_fd);
         _data.push_back(NULL);
+        _dataSize.push_back(0);
         std::thread recvThread(std::bind(&Network::receiveClientData, this,_socket_fd));
         recvThread.detach();
     }
@@ -125,10 +126,19 @@ int Network::Send(const char* data, const int lenght,const SOCKET sock)
     int id = getIdBySocket(sock);
     int status = (-1);
 
-    status = send(_clientSockets[id], data, lenght, 0);
+    status = send(_clientSockets[id], (char*)&lenght, sizeof(int), 0);
     if (status == SOCKET_ERROR)
     {
         std::cerr << "send failed: " << WSAGetLastError() << std::endl;
+    }
+    
+    if (status != SOCKET_ERROR)
+    {   
+        status = send(_clientSockets[id], data, lenght, 0);
+        if (status == SOCKET_ERROR)
+        {
+            std::cerr << "send failed: " << WSAGetLastError() << std::endl;
+        }
     }
     return status;
 }
@@ -143,6 +153,11 @@ int Network::Send(const char* data, const int lenght)
     return status;
 }
 
+std::vector<SOCKET> Network::GetAllConnectedClents()
+{
+    return _clientSockets;
+}
+        
 NetworkType Network::type()
 {
     return _type;
@@ -166,6 +181,7 @@ void Network::acceptClients()
             {
                 _clientSockets.push_back(newSocket);
                 _data.push_back(NULL);
+                _dataSize.push_back(0);
                 if (NULL != newClientConnectedFunc)
                 {
                     newClientConnectedFunc(newSocket);
@@ -183,21 +199,32 @@ void Network::receiveClientData(const SOCKET sock)
     while(true)
     {        
         // Actual communication
-        char buffer[1024] = {0};
-        int valread = recv(sock, buffer, sizeof(buffer), 0);
-        if (valread <= 0)
+        
+        int size{0};
+        recv(sock, (char*)&size, sizeof(int), 0);
+
+        if (size)
+        {
+            char *data = new char[size];
+            int valread = recv(sock, data, size, 0);
+            if (valread <= 0)
+            {
+                break;
+            }
+            
+            if (valread > 0)
+            {
+                _data[id] = data;
+                _dataSize[id] = size;
+                if (NULL != dataProcessingFunc)
+                {
+                    dataProcessingFunc(sock,_data[id],valread);
+                }
+            }
+        }
+        else
         {
             break;
-        }
-        
-        if (valread > 0)
-        {
-            _data[id] = new char[valread];
-            memcpy(_data[id],buffer,valread);
-            if (NULL != dataProcessingFunc)
-            {
-                dataProcessingFunc(sock,_data[id],valread);
-            }
         }
     }
     clientSocketRealese(sock);
@@ -211,6 +238,7 @@ void Network::clientSocketRealese(const SOCKET sock)
     {
         _clientSockets.erase(_clientSockets.begin() + id);
         _data.erase(_data.begin() + id);
+        _dataSize.erase(_dataSize.begin() + id);
         std::cout << "Client with ID: " << sock << " Disconected." << std::endl;
     }    
 }

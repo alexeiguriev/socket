@@ -23,7 +23,7 @@ typedef void (*NetworkNewClientConnectedFuncType)(const SOCKET sock);
 class Network
 {
     public:
-        Network(NetworkType type, std::string_view name, const int af, const int soketType, const int protocol, const u_long addr, const u_short port,
+        Network(NetworkType type, std::string_view name, const int af, const int soketType, const int protocol, const u_short port,
                 const std::string inetAddr);
 
         ~Network();
@@ -38,6 +38,8 @@ class Network
         /* used for clients only */
         int Send(const char* data, const int lenght);
 
+        std::vector<SOCKET> GetAllConnectedClents();
+
         NetworkType type();
 
         const std::string_view name();
@@ -49,6 +51,7 @@ class Network
         struct sockaddr_in _address;
         std::vector<SOCKET> _clientSockets; // Vector to store connected client sockets
         std::vector<char*> _data;
+        std::vector<int> _dataSize;
 
         NetworkType _type;
         StatusType _status{StatusNotInit};
