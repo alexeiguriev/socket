@@ -7,7 +7,8 @@
 #include "Chat.hpp"
 
 #define PORT 65432
-std::string inetAddr("192.168.56.1");
+//std::string inetAddr("192.168.56.1");
+std::string inetAddr("127.0.0.1");
 int main()
 {
     // Chat(server,PORT,inetAddr);
