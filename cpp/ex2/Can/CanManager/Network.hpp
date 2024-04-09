@@ -22,7 +22,7 @@ typedef void (*NetworkDataProcessingFuncType)(const SOCKET sock, const char *dat
 typedef void (*NetworkNewClientConnectedFuncType)(const SOCKET sock);
 
 // template <typename DataType = char*>
-template <typename T>
+template <typename DataType>
 class Network
 {
     public:
@@ -31,43 +31,45 @@ class Network
 
         ~Network();
 
-    //     void StartProcessingData();
+        void StartProcessingData();
 
-    //     void SetProcessingDataFunc(NetworkDataProcessingFuncType func);
+        void SetProcessingDataFunc(NetworkDataProcessingFuncType func);
 
-    //     void SetNewClientFunc(NetworkNewClientConnectedFuncType func);
+        void SetNewClientFunc(NetworkNewClientConnectedFuncType func);
 
-    //     int Send(const char* data, const int lenght,const SOCKET sock);
-    //     /* used for clients only */
-    //     int Send(const char* data, const int lenght);
+        int Send(const char* data, const int lenght,const SOCKET sock);
+        /* used for clients only */
+        int Send(const char* data, const int lenght);
 
-    //     std::vector<SOCKET> GetAllConnectedClents();
+        std::vector<SOCKET> GetAllConnectedClents();
 
-    //     NetworkType type();
+        NetworkType type();
 
-    //     const std::string_view name();
+        const std::string_view name();
 
-    // private:
-    //     WSADATA _wsaData;
+    private:
+        WSADATA _wsaData;
         
-    //     SOCKET _socket_fd{INVALID_SOCKET};
-    //     struct sockaddr_in _address;
-    //     std::vector<SOCKET> _clientSockets; // Vector to store connected client sockets
-    //     std::vector<char*> _data;
-    //     std::vector<int> _dataSize;
+        SOCKET _socket_fd{INVALID_SOCKET};
+        struct sockaddr_in _address;
+        std::vector<SOCKET> _clientSockets; // Vector to store connected client sockets
+        std::vector<char*> _data;
+        std::vector<int> _dataSize;
 
-    //     NetworkType _type;
-    //     StatusType _status{StatusNotInit};
-    //     std::string_view _name;
-    //     NetworkDataProcessingFuncType dataProcessingFunc{NULL};
-    //     NetworkNewClientConnectedFuncType newClientConnectedFunc{NULL};
+        NetworkType _type;
+        StatusType _status{StatusNotInit};
+        std::string_view _name;
+        NetworkDataProcessingFuncType dataProcessingFunc{NULL};
+        NetworkNewClientConnectedFuncType newClientConnectedFunc{NULL};
 
-    //     void acceptClients();
-    //     void receiveClientData(const SOCKET sock);
-    //     void clientSocketRealese(const SOCKET sock);
-    //     int getIdBySocket(const SOCKET sock);
-        // virtual DataType DataToStrConverion(char *charStr);
-        // virtual char* StrToDataConverion(DataType data);
+        void acceptClients();
+        void receiveClientData(const SOCKET sock);
+        void clientSocketRealese(const SOCKET sock);
+        int getIdBySocket(const SOCKET sock);
+
+        protected:
+        virtual DataType* DataToStrConverion(char *charStr);
+        virtual char* StrToDataConverion(DataType* data);
 };
 
 #endif /* NETWORK_HPP */

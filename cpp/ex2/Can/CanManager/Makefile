@@ -1,5 +1,5 @@
 all:
-	g++ -g -Wall Network.cpp main.cpp -o CamManager -lws2_32
+	g++ -g -Wall Network.cpp CanNetwork.cpp main.cpp -o CamManager -lws2_32
 
 
 run:

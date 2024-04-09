@@ -4,14 +4,14 @@
 #include <thread>
 #include <functional>
 
-#include "Network.hpp"
+#include "CanNetwork.hpp"
 
 #define PORT 65432
 
 std::string inetAddr("192.168.56.1");
 // Network(NetworkType type, std::string_view name, const int af, const int soketType, const int protocol, const u_short port,
 //                 const std::string inetAddr);
-Network<int> network(server,"TestServer",AF_INET,SOCK_STREAM,IPPROTO_TCP,PORT,inetAddr);
+CanNetwork<char> canNetwork(server,"TestServer",AF_INET,SOCK_STREAM,IPPROTO_TCP,PORT,inetAddr);
 // Network<int> network(10);
 
 int main()
